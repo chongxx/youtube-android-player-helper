@@ -20,6 +20,7 @@ import com.jaedongchicken.ytplayer.model.YTParams;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 
@@ -32,12 +33,19 @@ public class YoutubePlayerView extends WebView {
     private YouTubeListener youTubeListener;
     private String backgroundColor = "#000000";
 
-    public YoutubePlayerView(Context context) {
+    public static YoutubePlayerView build(SoftReference<Context> contextSoftReference) {
+        if (contextSoftReference.get() != null) {
+            return new YoutubePlayerView(contextSoftReference.get());
+        }
+        return null;
+    }
+
+    private YoutubePlayerView(Context context) {
         super(context);
         setWebViewClient(new MyWebViewClient((Activity) context));
     }
 
-    public YoutubePlayerView(Context context, AttributeSet attrs) {
+    private YoutubePlayerView(Context context, AttributeSet attrs) {
         super(context, attrs);
         setWebViewClient(new MyWebViewClient((Activity) context));
     }
@@ -76,16 +84,17 @@ public class YoutubePlayerView extends WebView {
     }
 
     public void initialize(String videoId, YTParams params, YouTubeListener youTubeListener) {
-        if(params != null) {
+        if (params != null) {
             this.params = params;
         }
         initialize(videoId, youTubeListener);
     }
+
     public void initializeWithUrl(String videoUrl, YTParams params, YouTubeListener youTubeListener) {
-        if(params != null) {
+        if (params != null) {
             this.params = params;
         }
-        String videoId = videoUrl.substring(videoUrl.indexOf('=')+1);
+        String videoId = videoUrl.substring(videoUrl.indexOf('=') + 1);
         initialize(videoId, youTubeListener);
     }
 
@@ -93,10 +102,12 @@ public class YoutubePlayerView extends WebView {
         backgroundColor = "#ffffff";
     }
 
-    public void setAutoPlayerHeight(Context context) {
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        ((Activity) context).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        this.getLayoutParams().height = (int) (displayMetrics.widthPixels * 0.5625);
+    public void setAutoPlayerHeight(SoftReference<Context> context) {
+        if (context.get() != null) {
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            ((Activity) context.get()).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            this.getLayoutParams().height = (int) (displayMetrics.widthPixels * 0.5625);
+        }
     }
 
     /**
